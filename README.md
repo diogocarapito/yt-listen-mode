@@ -27,6 +27,8 @@ When Listen Mode is **on**:
 | **Hide recommendations** | The sidebar, end screens, "up next" and recommendation shelves in search are gone. A playlist you opened yourself stays visible as your queue. |
 | **Hide comments and live chat** | Comments are never loaded. |
 | **Hide home feed and Shorts** | The home page shows a short note and a search prompt instead of a feed. Shorts shelves disappear and Shorts links open as regular videos (no endless swiping). |
+| **Hide the side menu on home** | On the landing page the left navigation menu and its menu button are gone, leaving just the search bar. Other pages keep the menu. |
+| **Hide thumbnails** | Search results, lists and the playlist queue become text-only, and the episode header and player bar drop their artwork. Channel avatars stay. |
 | **Block autoplay** | YouTube's autoplay switch is turned off and playback stops at the end of every video, including inside playlists. |
 | **Save data** | While the video is hidden, YouTube is asked to stream its lowest picture quality. |
 

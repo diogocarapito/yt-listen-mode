@@ -16,7 +16,7 @@
   const list = $('options');
 
   const STATUS = {
-    on: 'YouTube plays like a podcast. Changes apply to open tabs right away.',
+    on: 'YouTube plays like a podcast.',
     off: 'YouTube looks and works as usual.',
   };
 

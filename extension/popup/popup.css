@@ -41,14 +41,14 @@ body {
 }
 
 body {
-  width: 316px;
+  width: 328px;
   color: var(--ink);
   font: 400 13px/1.4 ui-rounded, "SF Pro Rounded", system-ui, -apple-system, "Segoe UI", sans-serif;
   -webkit-font-smoothing: antialiased;
 }
 
 .card {
-  padding: 18px 18px 14px;
+  padding: 14px 18px 12px;
 }
 
 /* Header */
@@ -56,7 +56,7 @@ body {
   display: flex;
   align-items: center;
   gap: 10px;
-  margin-bottom: 16px;
+  margin-bottom: 12px;
 }
 
 .head__logo {
@@ -96,7 +96,7 @@ body {
   display: grid;
   grid-template-columns: 1fr 1fr;
   width: 100%;
-  height: 54px;
+  height: 46px;
   margin: 0;
   padding: 4px;
   border: 1px solid var(--rule);
@@ -150,8 +150,7 @@ body {
 }
 
 .status {
-  min-height: 2.8em;
-  margin: 10px 2px 12px;
+  margin: 8px 2px 10px;
   color: var(--muted);
 }
 
@@ -169,7 +168,7 @@ body {
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 10px 2px;
+  padding: 6px 2px;
   border-bottom: 1px solid var(--rule);
   cursor: pointer;
 }
@@ -186,9 +185,9 @@ body {
 
 .opt__hint {
   display: block;
-  margin-top: 1px;
   color: var(--muted);
   font-size: 12px;
+  line-height: 1.3;
 }
 
 /* Small switches */
@@ -238,7 +237,7 @@ body {
   align-items: center;
   justify-content: space-between;
   gap: 8px;
-  margin-top: 12px;
+  margin-top: 10px;
   color: var(--muted);
   font-size: 12px;
 }

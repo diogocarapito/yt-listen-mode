@@ -19,18 +19,22 @@
     hideRecommendations: true,
     hideComments: true,
     hideFeedAndShorts: true,
+    hideSidebar: true,
+    hideThumbnails: true,
     blockAutoplay: true,
     dataSaver: true,
   });
 
   /** What the popup shows for each option, in display order. */
   const OPTIONS = Object.freeze([
-    { key: 'hideVideo', label: 'Hide the video', hint: 'Audio keeps playing in a podcast-style player.' },
+    { key: 'hideVideo', label: 'Hide the video', hint: 'Audio keeps playing, podcast style.' },
     { key: 'hideRecommendations', label: 'Hide recommendations', hint: 'Sidebar, end screens and “up next”.' },
     { key: 'hideComments', label: 'Hide comments and live chat', hint: 'Comments are never loaded.' },
     { key: 'hideFeedAndShorts', label: 'Hide home feed and Shorts', hint: 'Shorts links open as regular videos.' },
-    { key: 'blockAutoplay', label: 'Block autoplay', hint: 'Playback stops at the end of every video.' },
-    { key: 'dataSaver', label: 'Save data', hint: 'Streams the lowest picture quality while the video is hidden.' },
+    { key: 'hideSidebar', label: 'Hide the side menu on home', hint: 'Leaves just the search bar.' },
+    { key: 'hideThumbnails', label: 'Hide thumbnails', hint: 'Text-only results, lists and player.' },
+    { key: 'blockAutoplay', label: 'Block autoplay', hint: 'Stops at the end of every video.' },
+    { key: 'dataSaver', label: 'Save data', hint: 'Lowest quality while the video is hidden.' },
   ]);
 
   /** Speeds the player's speed button cycles through. */

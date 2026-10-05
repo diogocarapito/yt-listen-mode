@@ -61,6 +61,8 @@ Stored in `chrome.storage.sync` (defaults in `shared/settings.js`):
 | `hideRecommendations` | `true` | Hide sidebar, end screens, search shelves. |
 | `hideComments` | `true` | Hide comments and live chat. |
 | `hideFeedAndShorts` | `true` | Hide the home feed and Shorts; redirect `/shorts/ID` to `/watch?v=ID`. |
+| `hideSidebar` | `true` | Hide the side menu (guide) on the home page only. |
+| `hideThumbnails` | `true` | Hide video thumbnails everywhere and our own artwork. |
 | `blockAutoplay` | `true` | Turn off YouTube's autoplay switch and stop at the end of every video. |
 | `dataSaver` | `true` | Ask for the lowest quality, only while `hideVideo` is also on. |
 
@@ -74,9 +76,16 @@ builds itself from `OPTIONS`). If it's a pure CSS feature, add the key to `FEATU
 
 ### Hiding things
 `content.js` mirrors the settings onto `<html>` as classes (`ylm-on`, `ylm-hide-video`,
-`ylm-hide-recs`, `ylm-hide-comments`, `ylm-hide-feed`). Every rule in `content.css` is scoped under
+`ylm-hide-recs`, `ylm-hide-comments`, `ylm-hide-feed`, `ylm-hide-nav`, `ylm-hide-thumbs`). Every rule in `content.css` is scoped under
 those classes, so turning a feature off is just removing a class. That's why toggling is instant and
 needs no reload. The CSS is injected at `document_start`, so hidden things don't flash on page load.
+
+The side menu is the one page-dependent rule: the guide sits outside the page content, so
+`content.js` also sets `ylm-home` on `<html>` while the path is `/`, and the `ylm-hide-nav` rules
+require both classes.
+
+With `hideThumbnails` on, the episode header and player bar hide their artwork and `paintMeta()`
+doesn't set the image `src`, so the picture isn't downloaded either.
 
 ### Hiding the video without stopping the audio
 The player containers are collapsed to zero height with `overflow: hidden` and `opacity: 0`. The

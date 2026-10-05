@@ -6,6 +6,13 @@ and the project uses [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### Added
+- Option to hide the side menu on the home page, leaving just the search bar.
+- Option to hide thumbnails in search results, lists and the Listen Mode player.
+
+### Changed
+- The popup is more compact so all eight options fit without scrolling.
+
 ## [1.0.0] - 2026-10-05
 
 ### Added

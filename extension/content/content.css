@@ -7,6 +7,9 @@
  *   .ylm-hide-recs      hide recommendations and end screens
  *   .ylm-hide-comments  hide comments and live chat
  *   .ylm-hide-feed      hide the home feed and Shorts
+ *   .ylm-hide-nav       hide the side menu on the home page
+ *   .ylm-hide-thumbs    hide video thumbnails and our artwork
+ *   .ylm-home           the current page is the home page
  *   .ylm-bar-visible    the bottom player bar is on screen
  *   .ylm-hero-mounted   the episode header is on the watch page
  *
@@ -163,7 +166,51 @@ html.ylm-on.ylm-hide-feed :is(
 }
 
 /* ===================================================================== *
- * 5. Our UI: shared pieces                                               *
+ * 5. Hide the side menu on the home page                                 *
+ * The guide lives outside the page content, so these rules are keyed on  *
+ * .ylm-home (set by content.js) rather than on ytd-browse.               *
+ * ===================================================================== */
+html.ylm-on.ylm-hide-nav.ylm-home :is(
+  tp-yt-app-drawer#guide,
+  ytd-guide-renderer,
+  ytd-mini-guide-renderer,
+  ytd-masthead #guide-button,
+  #guide-spacer
+) {
+  display: none !important;
+}
+
+/* Give the room the menu took back to the page. */
+html.ylm-on.ylm-hide-nav.ylm-home ytd-app ytd-page-manager {
+  margin-left: 0 !important;
+}
+
+/* ===================================================================== *
+ * 6. Hide thumbnails                                                     *
+ * Video and playlist pictures everywhere (search results, lists, the     *
+ * queue). Channel avatars stay.                                          *
+ * ===================================================================== */
+html.ylm-on.ylm-hide-thumbs :is(
+  ytd-thumbnail,
+  ytd-playlist-thumbnail,
+  yt-thumbnail-view-model,
+  yt-collection-thumbnail-view-model,
+  yt-lockup-view-model [class*="content-image"],
+  ytd-playlist-panel-video-renderer #thumbnail-container,
+  ytd-video-preview,
+  .ytp-cued-thumbnail-overlay-image,
+  .ytp-videowall-still-image
+) {
+  display: none !important;
+}
+
+/* Our own artwork: the episode header and the player bar go text-only. */
+html.ylm-on.ylm-hide-thumbs :is(.ylm-hero__art, .ylm-bar__art) {
+  display: none !important;
+}
+
+/* ===================================================================== *
+ * 7. Our UI: shared pieces                                               *
  * ===================================================================== */
 html.ylm-on.ylm-bar-visible body {
   padding-bottom: var(--ylm-bar-h) !important;
@@ -231,7 +278,7 @@ svg.ylm-i {
 .ylm-eq > span:nth-child(3) { transform: scaleY(0.7); }
 
 /* ===================================================================== *
- * 6. Bottom player bar                                                   *
+ * 8. Bottom player bar                                                   *
  * ===================================================================== */
 #ylm-bar {
   position: fixed;
@@ -489,7 +536,7 @@ svg.ylm-i {
 }
 
 /* ===================================================================== *
- * 7. Episode header (watch page)                                         *
+ * 9. Episode header (watch page)                                         *
  * ===================================================================== */
 #ylm-hero {
   display: flex;
@@ -629,7 +676,7 @@ svg.ylm-i {
 }
 
 /* ===================================================================== *
- * 8. Home page note (replaces the feed)                                  *
+ * 10. Home page note (replaces the feed)                                 *
  * ===================================================================== */
 #ylm-home-note {
   flex: 1 1 100%;

@@ -55,6 +55,8 @@
     hideRecommendations: 'ylm-hide-recs',
     hideComments: 'ylm-hide-comments',
     hideFeedAndShorts: 'ylm-hide-feed',
+    hideSidebar: 'ylm-hide-nav',
+    hideThumbnails: 'ylm-hide-thumbs',
   };
 
   const SKIP_BACK_S = 15;
@@ -105,10 +107,12 @@
   };
   const textOf = (selectors) => (first(selectors)?.textContent || '').trim();
   const isWatchPage = () => location.pathname === '/watch';
+  const isHomePage = () => location.pathname === '/';
   const currentVideoId = () => new URLSearchParams(location.search).get('v') || '';
   const isAdShowing = () => !!$(SEL.adShowing);
   const isLive = () => !!$(SEL.live);
   const listenUiEnabled = () => settings.enabled && settings.hideVideo;
+  const artworkEnabled = () => !(settings.enabled && settings.hideThumbnails);
   const hasMedia = (video) => !!(video && (video.currentSrc || video.src));
 
   /** Run a chrome.* call without crashing if the extension was reloaded under us. */
@@ -537,7 +541,13 @@
   function paintMeta() {
     if (!ui.bar) return;
     const { id, title, channel } = state.meta;
-    if (id && ui.barArt.dataset.id !== id) {
+    if (!artworkEnabled()) {
+      // Thumbnails are hidden: don't download the artwork either.
+      for (const img of [ui.barArt, ui.heroArt]) {
+        img.removeAttribute('src');
+        delete img.dataset.id;
+      }
+    } else if (id && ui.barArt.dataset.id !== id) {
       // hqdefault always exists; content.css crops away its letterbox bands.
       const src = `https://i.ytimg.com/vi/${encodeURIComponent(id)}/hqdefault.jpg`;
       for (const img of [ui.barArt, ui.heroArt]) {
@@ -637,6 +647,8 @@
     for (const [key, className] of Object.entries(FEATURE_CLASSES)) {
       html.classList.toggle(className, on && !!settings[key]);
     }
+    // The side menu sits outside the page content, so its rules need to know the page.
+    html.classList.toggle('ylm-home', on && isHomePage());
     // Read by page-bridge.js (main world) to force the lowest quality.
     const saver = on && settings.hideVideo && settings.dataSaver ? '1' : '0';
     if (html.dataset.ylmDataSaver !== saver) html.dataset.ylmDataSaver = saver;
@@ -644,6 +656,7 @@
 
   function applySettings(previous) {
     applyHtmlState();
+    paintMeta();
     const wasListening = !!previous && previous.enabled && previous.hideVideo;
     if (listenUiEnabled() && !wasListening) {
       state.dismissed = false;
