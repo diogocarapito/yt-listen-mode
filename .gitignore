@@ -1,0 +1,18 @@
+# Build output
+dist/
+*.zip
+
+# Packed extensions and their private signing keys. Never commit a .pem.
+*.crx
+*.pem
+
+# OS and editor clutter
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+*.swp
+
+# Python (icon script)
+__pycache__/
+.venv/

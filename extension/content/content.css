@@ -1,0 +1,693 @@
+/*
+ * Listen Mode for YouTube: page styles.
+ *
+ * Every rule is scoped under classes that content.js puts on <html>:
+ *   .ylm-on             master switch
+ *   .ylm-hide-video     hide the picture and show the podcast player
+ *   .ylm-hide-recs      hide recommendations and end screens
+ *   .ylm-hide-comments  hide comments and live chat
+ *   .ylm-hide-feed      hide the home feed and Shorts
+ *   .ylm-bar-visible    the bottom player bar is on screen
+ *   .ylm-hero-mounted   the episode header is on the watch page
+ *
+ * Sections are grouped by feature. When YouTube changes its markup and
+ * something comes back, find its section below and add the new selector.
+ */
+
+/* ===================================================================== *
+ * 0. Theme tokens                                                        *
+ * Neutral colours follow YouTube's own light/dark values so the player   *
+ * blends in. The teal accent is ours, and deliberately not YouTube red.  *
+ * ===================================================================== */
+html.ylm-on {
+  --ylm-bg: #ffffff;
+  --ylm-fg: #0f0f0f;
+  --ylm-fg-2: #606060;
+  --ylm-line: rgba(0, 0, 0, 0.1);
+  --ylm-track: rgba(0, 0, 0, 0.14);
+  --ylm-hover: rgba(0, 0, 0, 0.06);
+  --ylm-accent: #17706b;
+  --ylm-accent-ink: #13605b;
+  --ylm-on-accent: #f2fbf9;
+  --ylm-bar-h: 76px;
+  --ylm-font: "Roboto", "Arial", sans-serif;
+}
+
+html.ylm-on[dark] {
+  --ylm-bg: #0f0f0f;
+  --ylm-fg: #f1f1f1;
+  --ylm-fg-2: #aaaaaa;
+  --ylm-line: rgba(255, 255, 255, 0.12);
+  --ylm-track: rgba(255, 255, 255, 0.2);
+  --ylm-hover: rgba(255, 255, 255, 0.08);
+  --ylm-accent: #5fd0c2;
+  --ylm-accent-ink: #7fdccf;
+  --ylm-on-accent: #062320;
+}
+
+/* ===================================================================== *
+ * 1. Hide the video                                                      *
+ * The player is collapsed, not removed: the <video> element keeps        *
+ * playing audio and stays controllable from our UI.                      *
+ * ===================================================================== */
+html.ylm-on.ylm-hide-video ytd-watch-flexy :is(
+  #player,
+  #player-container-outer,
+  #full-bleed-container,
+  #player-full-bleed-container,
+  #player-theater-container
+) {
+  height: 0 !important;
+  min-height: 0 !important;
+  max-height: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  overflow: hidden !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+}
+
+/* Ambient-mode glow behind the player. */
+html.ylm-on.ylm-hide-video :is(#cinematics, #cinematics-container, #cinematic-container) {
+  display: none !important;
+}
+
+/* The miniplayer stays alive (so audio continues) but out of sight;
+   our bottom bar replaces it. */
+html.ylm-on.ylm-hide-video ytd-miniplayer {
+  opacity: 0 !important;
+  pointer-events: none !important;
+  transform: translateY(150%) !important;
+}
+
+/* A calmer, centred reading column for title and description. */
+html.ylm-on.ylm-hide-video ytd-watch-flexy #columns {
+  justify-content: center !important;
+}
+
+html.ylm-on.ylm-hide-video ytd-watch-flexy #primary {
+  max-width: 900px !important;
+}
+
+/* The episode header shows the title, so drop YouTube's copy of it. */
+html.ylm-on.ylm-hero-mounted ytd-watch-metadata #title {
+  display: none !important;
+}
+
+/* ===================================================================== *
+ * 2. Hide recommendations                                                *
+ * ===================================================================== */
+html.ylm-on.ylm-hide-recs :is(
+  ytd-watch-flexy #related,
+  ytd-watch-next-secondary-results-renderer,
+  ytd-merch-shelf-renderer,
+  ytd-search ytd-shelf-renderer,
+  ytd-search ytd-horizontal-card-list-renderer,
+  .ytp-endscreen-content,
+  .ytp-ce-element,
+  .ytp-pause-overlay,
+  .ytp-autonav-endscreen,
+  .ytp-autonav-endscreen-countdown-overlay,
+  .ytp-suggested-action
+) {
+  display: none !important;
+}
+
+/* Keep the right column only when it holds a playlist (your own queue). */
+html.ylm-on.ylm-hide-recs ytd-watch-flexy #secondary:not(:has(ytd-playlist-panel-video-renderer)) {
+  display: none !important;
+}
+
+/* ===================================================================== *
+ * 3. Hide comments and live chat                                         *
+ * Hidden comments never scroll into view, so YouTube never loads them.   *
+ * ===================================================================== */
+html.ylm-on.ylm-hide-comments :is(
+  ytd-watch-flexy #comments,
+  ytd-comments#comments,
+  ytd-comments-entry-point-header-renderer,
+  ytd-watch-flexy #chat,
+  ytd-watch-flexy #chat-container,
+  ytd-live-chat-frame,
+  ytd-engagement-panel-section-list-renderer[target-id="engagement-panel-comments-section"]
+) {
+  display: none !important;
+}
+
+/* ===================================================================== *
+ * 4. Hide the home feed and Shorts                                       *
+ * ===================================================================== */
+/* Everything on the home page except our note. */
+html.ylm-on.ylm-hide-feed ytd-browse[page-subtype="home"] > :not(#ylm-home-note) {
+  display: none !important;
+}
+
+html.ylm-on.ylm-hide-feed :is(
+  ytd-reel-shelf-renderer,
+  ytd-rich-shelf-renderer[is-shorts],
+  ytd-rich-section-renderer:has(ytd-rich-shelf-renderer[is-shorts]),
+  grid-shelf-view-model:has(ytm-shorts-lockup-view-model),
+  ytm-shorts-lockup-view-model,
+  ytm-shorts-lockup-view-model-v2,
+  ytd-video-renderer:has(a[href^="/shorts/"]),
+  ytd-grid-video-renderer:has(a[href^="/shorts/"]),
+  ytd-rich-item-renderer:has(a[href^="/shorts/"]),
+  ytd-guide-entry-renderer:has(a[href^="/shorts"]),
+  ytd-guide-entry-renderer:has(a[title="Shorts"]),
+  ytd-mini-guide-entry-renderer:has(a[href^="/shorts"]),
+  ytd-mini-guide-entry-renderer[aria-label="Shorts"],
+  yt-tab-shape[tab-title="Shorts"],
+  ytd-video-preview
+) {
+  display: none !important;
+}
+
+/* ===================================================================== *
+ * 5. Our UI: shared pieces                                               *
+ * ===================================================================== */
+html.ylm-on.ylm-bar-visible body {
+  padding-bottom: var(--ylm-bar-h) !important;
+}
+
+#ylm-bar[hidden],
+#ylm-hero[hidden],
+#ylm-bar [hidden],
+#ylm-hero [hidden] {
+  display: none !important;
+}
+
+#ylm-bar,
+#ylm-hero,
+#ylm-home-note {
+  box-sizing: border-box;
+  color: var(--ylm-fg);
+  font-family: var(--ylm-font);
+  -webkit-font-smoothing: antialiased;
+}
+
+#ylm-bar *,
+#ylm-hero *,
+#ylm-home-note * {
+  box-sizing: border-box;
+}
+
+#ylm-bar :focus-visible,
+#ylm-hero :focus-visible,
+#ylm-home-note :focus-visible {
+  outline: 2px solid var(--ylm-accent);
+  outline-offset: 2px;
+}
+
+svg.ylm-i {
+  display: block;
+  fill: currentColor;
+}
+
+/* Play/pause buttons hold both icons; data-paused picks one. */
+.ylm-play:not([data-paused="false"]) .ylm-i-pause,
+.ylm-play[data-paused="false"] .ylm-i-play {
+  display: none;
+}
+
+/* Three-bar equaliser mark, used in the header and the home note. */
+.ylm-eq {
+  display: inline-flex;
+  align-items: flex-end;
+  gap: 2px;
+  height: 12px;
+  color: var(--ylm-accent);
+}
+
+.ylm-eq > span {
+  width: 3px;
+  height: 100%;
+  border-radius: 1px;
+  background: currentColor;
+  transform-origin: bottom;
+}
+
+.ylm-eq > span:nth-child(1) { transform: scaleY(0.55); }
+.ylm-eq > span:nth-child(2) { transform: scaleY(1); }
+.ylm-eq > span:nth-child(3) { transform: scaleY(0.7); }
+
+/* ===================================================================== *
+ * 6. Bottom player bar                                                   *
+ * ===================================================================== */
+#ylm-bar {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 2015; /* above page content, below YouTube menus and dialogs */
+  height: var(--ylm-bar-h);
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(260px, 1.5fr) minmax(0, 1fr);
+  align-items: center;
+  gap: 20px;
+  padding: 0 20px;
+  background: color-mix(in srgb, var(--ylm-bg) 90%, transparent);
+  -webkit-backdrop-filter: blur(20px) saturate(1.4);
+  backdrop-filter: blur(20px) saturate(1.4);
+  border-top: 1px solid var(--ylm-line);
+  font-size: 14px;
+  line-height: 1.3;
+}
+
+.ylm-bar__info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+  margin-left: -6px;
+  padding: 6px;
+  border-radius: 10px;
+  color: inherit;
+  text-decoration: none;
+}
+
+.ylm-bar__info:hover {
+  background: var(--ylm-hover);
+}
+
+.ylm-bar__art {
+  flex: 0 0 auto;
+  width: 48px;
+  height: 48px;
+  border-radius: 8px;
+  object-fit: cover;
+  /* hqdefault.jpg is 4:3 with black bands; look only at the 16:9 picture inside it. */
+  object-view-box: inset(12.5% 0 12.5% 0);
+  background: var(--ylm-line);
+}
+
+.ylm-bar__text {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.ylm-bar__title,
+.ylm-bar__channel {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.ylm-bar__title {
+  font-weight: 500;
+}
+
+.ylm-bar__channel {
+  font-size: 12px;
+  color: var(--ylm-fg-2);
+}
+
+.ylm-bar__center {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.ylm-bar__controls {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 14px;
+}
+
+.ylm-bar__timeline {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.ylm-time {
+  flex: 0 0 auto;
+  min-width: 44px;
+  font-size: 11px;
+  color: var(--ylm-fg-2);
+  font-variant-numeric: tabular-nums;
+}
+
+.ylm-time--cur {
+  text-align: right;
+}
+
+.ylm-bar__right {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 8px;
+}
+
+.ylm-btn {
+  appearance: none;
+  display: inline-grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: none;
+  color: inherit;
+  cursor: pointer;
+  transition: background-color 0.12s, transform 0.12s;
+}
+
+.ylm-btn:hover {
+  background: var(--ylm-hover);
+}
+
+.ylm-btn:active {
+  transform: scale(0.94);
+}
+
+.ylm-btn svg {
+  width: 24px;
+  height: 24px;
+}
+
+.ylm-btn--play,
+.ylm-btn--play:hover {
+  width: 40px;
+  height: 40px;
+  background: var(--ylm-accent);
+  color: var(--ylm-on-accent);
+}
+
+.ylm-btn--play:hover {
+  filter: brightness(1.08);
+}
+
+.ylm-btn--play svg {
+  width: 22px;
+  height: 22px;
+}
+
+.ylm-btn--quiet {
+  color: var(--ylm-fg-2);
+}
+
+.ylm-btn--quiet svg {
+  width: 20px;
+  height: 20px;
+}
+
+.ylm-pill {
+  appearance: none;
+  min-width: 52px;
+  height: 30px;
+  margin: 0;
+  padding: 0 12px;
+  border: 1px solid var(--ylm-line);
+  border-radius: 999px;
+  background: none;
+  color: inherit;
+  font: 600 13px/1 var(--ylm-font);
+  font-variant-numeric: tabular-nums;
+  cursor: pointer;
+}
+
+.ylm-pill:hover {
+  background: var(--ylm-hover);
+}
+
+.ylm-pill--accent {
+  border-color: var(--ylm-accent);
+  color: var(--ylm-accent-ink);
+}
+
+/* Scrubber */
+.ylm-range {
+  -webkit-appearance: none;
+  appearance: none;
+  flex: 1 1 auto;
+  min-width: 0;
+  height: 4px;
+  margin: 0;
+  border-radius: 999px;
+  background: linear-gradient(
+    to right,
+    var(--ylm-accent) var(--ylm-pct, 0%),
+    var(--ylm-track) var(--ylm-pct, 0%)
+  );
+  cursor: pointer;
+  transition: height 0.12s;
+}
+
+.ylm-bar__timeline:hover .ylm-range:not(:disabled) {
+  height: 6px;
+}
+
+.ylm-range::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 13px;
+  height: 13px;
+  border: 0;
+  border-radius: 50%;
+  background: var(--ylm-accent);
+  opacity: 0;
+  transition: opacity 0.12s;
+}
+
+.ylm-bar__timeline:hover .ylm-range:not(:disabled)::-webkit-slider-thumb,
+.ylm-range:focus-visible::-webkit-slider-thumb {
+  opacity: 1;
+}
+
+.ylm-range:disabled {
+  cursor: default;
+  opacity: 0.5;
+}
+
+@media (max-width: 760px) {
+  #ylm-bar {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.4fr) auto;
+    gap: 10px;
+    padding: 0 10px;
+  }
+
+  .ylm-bar__channel,
+  .ylm-time {
+    display: none;
+  }
+}
+
+@media (max-width: 520px) {
+  #ylm-bar {
+    grid-template-columns: auto minmax(0, 1fr) auto;
+  }
+
+  .ylm-bar__text,
+  .ylm-speed {
+    display: none;
+  }
+}
+
+/* ===================================================================== *
+ * 7. Episode header (watch page)                                         *
+ * ===================================================================== */
+#ylm-hero {
+  display: flex;
+  align-items: center;
+  gap: 28px;
+  margin: 24px 0 20px;
+  padding: 24px;
+  border: 1px solid color-mix(in srgb, var(--ylm-accent) 22%, transparent);
+  border-radius: 20px;
+  background: color-mix(in srgb, var(--ylm-accent) 6%, var(--ylm-bg));
+}
+
+.ylm-hero__art {
+  flex: 0 0 auto;
+  width: min(300px, 42%);
+  aspect-ratio: 16 / 9;
+  overflow: hidden;
+  border-radius: 14px;
+  background: var(--ylm-line);
+  box-shadow: 0 14px 30px -16px rgba(0, 0, 0, 0.55);
+}
+
+.ylm-hero__art img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-view-box: inset(12.5% 0 12.5% 0);
+}
+
+.ylm-hero__body {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.ylm-hero__title {
+  display: -webkit-box;
+  margin: 0;
+  overflow: hidden;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  color: var(--ylm-fg);
+  font-size: 22px;
+  font-weight: 700;
+  line-height: 1.25;
+  letter-spacing: -0.01em;
+}
+
+.ylm-hero__channel {
+  margin: 6px 0 0;
+  color: var(--ylm-fg-2);
+  font-size: 14px;
+}
+
+.ylm-hero__actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 16px;
+  margin-top: 18px;
+}
+
+.ylm-hero__play {
+  appearance: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: 44px;
+  margin: 0;
+  padding: 0 22px 0 16px;
+  border: 0;
+  border-radius: 999px;
+  background: var(--ylm-accent);
+  color: var(--ylm-on-accent);
+  font: 600 15px/1 var(--ylm-font);
+  cursor: pointer;
+  transition: filter 0.12s, transform 0.12s;
+}
+
+.ylm-hero__play:hover {
+  filter: brightness(1.08);
+}
+
+.ylm-hero__play:active {
+  transform: scale(0.97);
+}
+
+.ylm-hero__play svg {
+  width: 22px;
+  height: 22px;
+}
+
+.ylm-hero__status {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--ylm-fg-2);
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+}
+
+#ylm-hero:not([data-playing="true"]) .ylm-eq {
+  opacity: 0.4;
+}
+
+/* The one piece of ambient motion: the equaliser moves while audio plays. */
+#ylm-hero[data-playing="true"] .ylm-eq > span {
+  animation: ylm-eq 1.1s ease-in-out infinite;
+}
+
+#ylm-hero[data-playing="true"] .ylm-eq > span:nth-child(2) { animation-delay: -0.45s; }
+#ylm-hero[data-playing="true"] .ylm-eq > span:nth-child(3) { animation-delay: -0.8s; }
+
+@keyframes ylm-eq {
+  0%, 100% { transform: scaleY(0.35); }
+  50% { transform: scaleY(1); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #ylm-hero[data-playing="true"] .ylm-eq > span {
+    animation: none;
+  }
+}
+
+@media (max-width: 640px) {
+  #ylm-hero {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 16px;
+    margin: 12px 0;
+    padding: 16px;
+  }
+
+  .ylm-hero__art {
+    width: 100%;
+  }
+}
+
+/* ===================================================================== *
+ * 8. Home page note (replaces the feed)                                  *
+ * ===================================================================== */
+#ylm-home-note {
+  flex: 1 1 100%;
+  width: 100%;
+  max-width: 520px;
+  margin: 14vh auto 0;
+  padding: 0 24px;
+  text-align: center;
+}
+
+.ylm-eq--big {
+  gap: 4px;
+  height: 32px;
+}
+
+.ylm-eq--big > span {
+  width: 7px;
+  border-radius: 3px;
+}
+
+.ylm-home-note__title {
+  margin: 18px 0 8px;
+  color: var(--ylm-fg);
+  font-size: 24px;
+  font-weight: 700;
+  line-height: 1.25;
+  letter-spacing: -0.01em;
+}
+
+.ylm-home-note__text {
+  margin: 0 auto 22px;
+  max-width: 44ch;
+  color: var(--ylm-fg-2);
+  font-size: 15px;
+  line-height: 1.5;
+}
+
+.ylm-home-note__links {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 10px;
+}
+
+.ylm-home-note__links a {
+  display: inline-flex;
+  align-items: center;
+  height: 36px;
+  padding: 0 16px;
+  border: 1px solid var(--ylm-line);
+  border-radius: 999px;
+  color: var(--ylm-fg);
+  font-size: 14px;
+  font-weight: 500;
+  text-decoration: none;
+}
+
+.ylm-home-note__links a:hover {
+  border-color: var(--ylm-accent);
+  color: var(--ylm-accent-ink);
+}

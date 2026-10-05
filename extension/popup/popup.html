@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Listen Mode for YouTube</title>
+    <link rel="stylesheet" href="popup.css" />
+  </head>
+  <body>
+    <main id="card" class="card" data-enabled="true">
+      <header class="head">
+        <img id="logo" class="head__logo" src="../icons/icon-on-48.png" width="36" height="36" alt="" />
+        <div class="head__text">
+          <h1 class="head__name">Listen Mode</h1>
+          <p class="head__sub">for YouTube</p>
+        </div>
+        <span id="version" class="head__version"></span>
+      </header>
+
+      <button id="power" class="power" type="button" role="switch" aria-checked="true" aria-label="Listen Mode">
+        <span class="power__side power__side--off">Off</span>
+        <span class="power__side power__side--on">On</span>
+      </button>
+      <p id="status" class="status" aria-live="polite"></p>
+
+      <section id="options" class="opts" aria-label="Options"></section>
+
+      <footer class="foot">
+        <span class="foot__shortcut">
+          Shortcut <kbd id="shortcut">Alt+Shift+L</kbd>
+          <button id="change-shortcut" class="link" type="button">Change</button>
+        </span>
+        <a id="repo" class="link" target="_blank" rel="noreferrer">Source</a>
+      </footer>
+    </main>
+
+    <script src="../shared/settings.js"></script>
+    <script src="popup.js"></script>
+  </body>
+</html>

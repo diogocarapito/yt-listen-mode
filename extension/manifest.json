@@ -1,0 +1,48 @@
+{
+  "manifest_version": 3,
+  "name": "Listen Mode for YouTube",
+  "version": "1.0.0",
+  "description": "Turn YouTube into a calm, podcast-style audio player: no video, no recommendations, no comments, no autoplay.",
+  "homepage_url": "https://github.com/YOUR_GITHUB_USERNAME/yt-listen-mode",
+  "minimum_chrome_version": "111",
+  "icons": {
+    "16": "icons/icon-on-16.png",
+    "32": "icons/icon-on-32.png",
+    "48": "icons/icon-on-48.png",
+    "128": "icons/icon-on-128.png"
+  },
+  "action": {
+    "default_title": "Listen Mode for YouTube",
+    "default_popup": "popup/popup.html",
+    "default_icon": {
+      "16": "icons/icon-on-16.png",
+      "32": "icons/icon-on-32.png",
+      "48": "icons/icon-on-48.png",
+      "128": "icons/icon-on-128.png"
+    }
+  },
+  "background": {
+    "service_worker": "background.js"
+  },
+  "permissions": ["storage"],
+  "content_scripts": [
+    {
+      "matches": ["https://www.youtube.com/*"],
+      "js": ["shared/settings.js", "content/content.js"],
+      "css": ["content/content.css"],
+      "run_at": "document_start"
+    },
+    {
+      "matches": ["https://www.youtube.com/*"],
+      "js": ["content/page-bridge.js"],
+      "run_at": "document_start",
+      "world": "MAIN"
+    }
+  ],
+  "commands": {
+    "toggle-listen-mode": {
+      "suggested_key": { "default": "Alt+Shift+L" },
+      "description": "Turn Listen Mode on or off"
+    }
+  }
+}
