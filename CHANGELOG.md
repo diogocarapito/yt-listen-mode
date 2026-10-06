@@ -8,10 +8,22 @@ and the project uses [Semantic Versioning](https://semver.org/).
 
 ### Added
 - Option to hide the side menu on the home page, leaving just the search bar.
-- Option to hide thumbnails in search results, lists and the Listen Mode player.
+- Option to hide thumbnails in search results, lists and the Listen Mode player;
+  large channel pictures shrink to a text-sized icon.
+
+- Optional audio visualizer where the video was: spectrogram, oscilloscope, frequency analyzer,
+  or all three combined (off by default).
+
+- Option to hide the video info under the player (channel row, buttons, description).
+
+- Option to make the episode header fill the whole window (on by default).
+
+- Accent colour choice (seven colours) and Light / Dark / System appearance, for the player and the popup.
 
 ### Changed
-- The popup is more compact so all eight options fit without scrolling.
+- The side menu is now hidden in search results as well as on the home page.
+- Minimum browser version is Chromium 123.
+- The popup is more compact so all options fit without scrolling; option hints are now tooltips.
 
 ## [1.0.0] - 2026-10-05
 

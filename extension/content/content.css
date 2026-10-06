@@ -4,12 +4,16 @@
  * Every rule is scoped under classes that content.js puts on <html>:
  *   .ylm-on             master switch
  *   .ylm-hide-video     hide the picture and show the podcast player
+ *   .ylm-fill           the episode header fills the window
  *   .ylm-hide-recs      hide recommendations and end screens
+ *   .ylm-hide-info      hide the channel row, buttons and description
  *   .ylm-hide-comments  hide comments and live chat
  *   .ylm-hide-feed      hide the home feed and Shorts
- *   .ylm-hide-nav       hide the side menu on the home page
+ *   .ylm-hide-nav       hide the side menu on the home page and search results
  *   .ylm-hide-thumbs    hide video thumbnails and our artwork
- *   .ylm-home           the current page is the home page
+ *   .ylm-no-nav-page    the current page is the home page or search results
+ *   .ylm-theme-light    force our UI light (default: follow YouTube's theme)
+ *   .ylm-theme-dark     force our UI dark
  *   .ylm-bar-visible    the bottom player bar is on screen
  *   .ylm-hero-mounted   the episode header is on the watch page
  *
@@ -20,7 +24,9 @@
 /* ===================================================================== *
  * 0. Theme tokens                                                        *
  * Neutral colours follow YouTube's own light/dark values so the player   *
- * blends in. The teal accent is ours, and deliberately not YouTube red.  *
+ * blends in. The accent is ours (teal unless another is picked) and       *
+ * deliberately not YouTube red: content.js sets --ylm-accent-l and        *
+ * --ylm-accent-d on <html>, the shades for light and dark backgrounds.    *
  * ===================================================================== */
 html.ylm-on {
   --ylm-bg: #ffffff;
@@ -29,23 +35,25 @@ html.ylm-on {
   --ylm-line: rgba(0, 0, 0, 0.1);
   --ylm-track: rgba(0, 0, 0, 0.14);
   --ylm-hover: rgba(0, 0, 0, 0.06);
-  --ylm-accent: #17706b;
-  --ylm-accent-ink: #13605b;
-  --ylm-on-accent: #f2fbf9;
+  --ylm-accent: var(--ylm-accent-l, #17706b);
+  --ylm-accent-ink: color-mix(in srgb, var(--ylm-accent) 85%, #000);
+  --ylm-on-accent: color-mix(in srgb, var(--ylm-accent) 6%, #fff);
   --ylm-bar-h: 76px;
   --ylm-font: "Roboto", "Arial", sans-serif;
 }
 
-html.ylm-on[dark] {
+/* Dark when YouTube is dark, unless a theme is forced. */
+html.ylm-on[dark]:not(.ylm-theme-light),
+html.ylm-on.ylm-theme-dark {
   --ylm-bg: #0f0f0f;
   --ylm-fg: #f1f1f1;
   --ylm-fg-2: #aaaaaa;
   --ylm-line: rgba(255, 255, 255, 0.12);
   --ylm-track: rgba(255, 255, 255, 0.2);
   --ylm-hover: rgba(255, 255, 255, 0.08);
-  --ylm-accent: #5fd0c2;
-  --ylm-accent-ink: #7fdccf;
-  --ylm-on-accent: #062320;
+  --ylm-accent: var(--ylm-accent-d, #5fd0c2);
+  --ylm-accent-ink: color-mix(in srgb, var(--ylm-accent) 80%, #fff);
+  --ylm-on-accent: color-mix(in srgb, var(--ylm-accent) 14%, #000);
 }
 
 /* ===================================================================== *
@@ -121,6 +129,13 @@ html.ylm-on.ylm-hide-recs ytd-watch-flexy #secondary:not(:has(ytd-playlist-panel
   display: none !important;
 }
 
+/* Video info under the player: channel row, like/share buttons and the
+   description. content.js still reads the title and channel from it, which
+   works on hidden elements. */
+html.ylm-on.ylm-hide-info ytd-watch-flexy ytd-watch-metadata {
+  display: none !important;
+}
+
 /* ===================================================================== *
  * 3. Hide comments and live chat                                         *
  * Hidden comments never scroll into view, so YouTube never loads them.   *
@@ -166,11 +181,11 @@ html.ylm-on.ylm-hide-feed :is(
 }
 
 /* ===================================================================== *
- * 5. Hide the side menu on the home page                                 *
+ * 5. Hide the side menu on the home page and in search results          *
  * The guide lives outside the page content, so these rules are keyed on  *
- * .ylm-home (set by content.js) rather than on ytd-browse.               *
+ * .ylm-no-nav-page (set by content.js) rather than on the page element.  *
  * ===================================================================== */
-html.ylm-on.ylm-hide-nav.ylm-home :is(
+html.ylm-on.ylm-hide-nav.ylm-no-nav-page :is(
   tp-yt-app-drawer#guide,
   ytd-guide-renderer,
   ytd-mini-guide-renderer,
@@ -181,14 +196,14 @@ html.ylm-on.ylm-hide-nav.ylm-home :is(
 }
 
 /* Give the room the menu took back to the page. */
-html.ylm-on.ylm-hide-nav.ylm-home ytd-app ytd-page-manager {
+html.ylm-on.ylm-hide-nav.ylm-no-nav-page ytd-app ytd-page-manager {
   margin-left: 0 !important;
 }
 
 /* ===================================================================== *
  * 6. Hide thumbnails                                                     *
  * Video and playlist pictures everywhere (search results, lists, the     *
- * queue). Channel avatars stay.                                          *
+ * queue). Channel avatars stay, but large ones shrink to icon size.      *
  * ===================================================================== */
 html.ylm-on.ylm-hide-thumbs :is(
   ytd-thumbnail,
@@ -202,6 +217,26 @@ html.ylm-on.ylm-hide-thumbs :is(
   .ytp-videowall-still-image
 ) {
   display: none !important;
+}
+
+/* Channel pictures shrink from thumbnail size to a text-sized icon:
+   channel results in search, and the header of a channel page. */
+html.ylm-on.ylm-hide-thumbs ytd-channel-renderer #avatar-section {
+  flex: 0 0 auto !important;
+  width: auto !important;
+  min-width: 0 !important;
+  max-width: none !important;
+  margin-right: 12px !important;
+}
+
+html.ylm-on.ylm-hide-thumbs :is(
+  ytd-channel-renderer #avatar-section :is(#avatar, yt-img-shadow, img),
+  yt-page-header-view-model :is(yt-decorated-avatar-view-model, yt-avatar-shape, [class*="avatar-shape"], yt-avatar-shape img)
+) {
+  width: 20px !important;
+  height: 20px !important;
+  min-width: 0 !important;
+  margin: 0 !important;
 }
 
 /* Our own artwork: the episode header and the player bar go text-only. */
@@ -540,13 +575,31 @@ svg.ylm-i {
  * ===================================================================== */
 #ylm-hero {
   display: flex;
-  align-items: center;
-  gap: 28px;
+  flex-direction: column;
+  gap: 20px;
   margin: 24px 0 20px;
   padding: 24px;
   border: 1px solid color-mix(in srgb, var(--ylm-accent) 22%, transparent);
   border-radius: 20px;
   background: color-mix(in srgb, var(--ylm-accent) 6%, var(--ylm-bg));
+}
+
+/* Artwork beside the title and Play button. */
+.ylm-hero__row {
+  display: flex;
+  align-items: center;
+  gap: 28px;
+}
+
+/* Audio visualizer, on its own row where the video used to be. */
+.ylm-hero__viz {
+  display: block;
+  flex: 0 0 auto;
+  width: 100%;
+  height: 340px;
+  border: 1px solid var(--ylm-line);
+  border-radius: 14px;
+  background: var(--ylm-bg);
 }
 
 .ylm-hero__art {
@@ -663,16 +716,65 @@ svg.ylm-i {
 
 @media (max-width: 640px) {
   #ylm-hero {
-    flex-direction: column;
-    align-items: stretch;
     gap: 16px;
     margin: 12px 0;
     padding: 16px;
   }
 
+  .ylm-hero__row {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 16px;
+  }
+
+  .ylm-hero__viz {
+    height: 240px;
+  }
+
   .ylm-hero__art {
     width: 100%;
   }
+}
+
+/* Fill the page: the header takes the whole window below YouTube's top bar
+   (and above our player bar). Everything else on the page is a scroll away. */
+html.ylm-on.ylm-fill.ylm-hero-mounted ytd-watch-flexy #columns {
+  max-width: none !important;
+  margin: 0 !important;
+}
+
+html.ylm-on.ylm-fill.ylm-hero-mounted ytd-watch-flexy #primary {
+  flex: 1 1 auto !important;
+  min-width: 0 !important;
+  max-width: none !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+html.ylm-on.ylm-fill.ylm-hero-mounted ytd-watch-flexy #below {
+  max-width: 900px !important;
+  margin: 0 auto !important;
+  padding: 0 24px !important;
+}
+
+html.ylm-fill #ylm-hero {
+  --ylm-top: var(--ytd-masthead-height, var(--ytd-toolbar-height, 56px));
+  justify-content: center;
+  min-height: calc(100vh - var(--ylm-top));
+  margin: 0 0 20px;
+  border-width: 0 0 1px;
+  border-radius: 0;
+}
+
+html.ylm-fill.ylm-bar-visible #ylm-hero {
+  min-height: calc(100vh - var(--ylm-top) - var(--ylm-bar-h));
+}
+
+/* The visualizer takes whatever height the title row leaves. */
+html.ylm-fill .ylm-hero__viz {
+  flex: 1 1 0;
+  height: auto;
+  min-height: 240px;
 }
 
 /* ===================================================================== *
@@ -682,8 +784,11 @@ svg.ylm-i {
   flex: 1 1 100%;
   width: 100%;
   max-width: 520px;
-  margin: 14vh auto 0;
-  padding: 0 24px;
+  margin: 12vh auto 0;
+  padding: 32px 24px;
+  border-radius: 20px;
+  /* Same as YouTube's page colour, unless a different theme is forced. */
+  background: var(--ylm-bg);
   text-align: center;
 }
 

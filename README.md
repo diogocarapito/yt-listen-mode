@@ -24,13 +24,17 @@ When Listen Mode is **on**:
 | Feature | What happens |
 | --- | --- |
 | **Hide the video** | The picture disappears and audio keeps playing. The watch page shows an episode header (artwork, title, channel, Play button) and a player bar stays at the bottom of the window with play/pause, back 15 s, forward 30 s, a scrubber, time left and a speed button (0.75× to 3×). Your speed is remembered between videos. |
+| **Visualizer** | Optionally draws the audio where the video was: a scrolling spectrogram, an oscilloscope waveform, a frequency analyzer, or all three at once. Off ("None") by default. |
+| **Fill the page** | The episode header (visualizer, title and Play button) takes the whole window under YouTube's top bar. Scroll down for anything else on the page. |
 | **Hide recommendations** | The sidebar, end screens, "up next" and recommendation shelves in search are gone. A playlist you opened yourself stays visible as your queue. |
+| **Hide video info** | Removes the channel row, the like and share buttons and the description under the player. |
 | **Hide comments and live chat** | Comments are never loaded. |
 | **Hide home feed and Shorts** | The home page shows a short note and a search prompt instead of a feed. Shorts shelves disappear and Shorts links open as regular videos (no endless swiping). |
-| **Hide the side menu on home** | On the landing page the left navigation menu and its menu button are gone, leaving just the search bar. Other pages keep the menu. |
-| **Hide thumbnails** | Search results, lists and the playlist queue become text-only, and the episode header and player bar drop their artwork. Channel avatars stay. |
+| **Hide the side menu** | On the home page and in search results the left navigation menu and its menu button are gone, leaving just the search bar. Other pages keep the menu. |
+| **Hide thumbnails** | Search results, lists and the playlist queue become text-only, and the episode header and player bar drop their artwork. Channel pictures shrink to a small text-sized icon. |
 | **Block autoplay** | YouTube's autoplay switch is turned off and playback stops at the end of every video, including inside playlists. |
 | **Save data** | While the video is hidden, YouTube is asked to stream its lowest picture quality. |
+| **Colour and appearance** | Pick one of seven accent colours, and Light, Dark or System. System means the player follows YouTube's own theme and the popup follows your device. |
 
 Every option can be switched off individually in the popup.
 
@@ -61,7 +65,7 @@ git clone https://github.com/YOUR_GITHUB_USERNAME/yt-listen-mode.git
 
 Then follow steps 3 to 5 above and select the `extension/` folder inside the repository.
 
-Works in Brave, Chrome, Edge, Vivaldi, Opera and other Chromium browsers version 111 or newer.
+Works in Brave, Chrome, Edge, Vivaldi, Opera and other Chromium browsers version 123 or newer.
 
 ## Privacy
 
@@ -114,6 +118,7 @@ yt-listen-mode/
 │   ├── content/
 │   │   ├── content.js         Applies settings, builds the player, blocks autoplay
 │   │   ├── content.css        Everything that gets hidden, plus the player's styles
+│   │   ├── visualizer.js      Spectrogram, oscilloscope and frequency analyzer
 │   │   └── page-bridge.js     Asks YouTube's player for low quality (Save data)
 │   ├── popup/                 The Off/On popup (HTML, CSS, JS)
 │   └── icons/                 Generated PNG icons, on and off states

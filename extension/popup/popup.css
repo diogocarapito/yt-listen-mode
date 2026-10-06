@@ -1,33 +1,34 @@
 /*
  * Listen Mode popup.
- * Palette: "transistor teal". Mist paper in light mode, deep enamel teal in dark mode.
  * The Off | On slider is the one bold element; everything else stays quiet.
+ *
+ * Colours: popup.js sets --accent-l / --accent-d (the chosen accent's shades
+ * for light and dark backgrounds) and, when a theme is forced, data-theme on
+ * <html>. Every neutral is the accent mixed into white or near-black, so the
+ * whole popup takes on a tint of the accent.
  */
 :root {
-  --mist: #eef3f1;
-  --ink: #14211f;
-  --muted: #5b6b67;
-  --rule: #d3dedb;
-  --well: #e0e9e6;
-  --knob: #ffffff;
-  --accent: #17706b;
-  --on-accent: #f2fbf9;
-  --shadow: 0 1px 2px rgba(20, 33, 31, 0.16), 0 4px 10px -4px rgba(20, 33, 31, 0.25);
   color-scheme: light dark;
+  --accent-l: #17706b;
+  --accent-d: #5fd0c2;
+  --accent: light-dark(var(--accent-l), var(--accent-d));
+  --on-accent: light-dark(color-mix(in srgb, var(--accent-l) 6%, #fff), color-mix(in srgb, var(--accent-d) 14%, #000));
+  --mist: light-dark(color-mix(in srgb, var(--accent-l) 7%, #fff), color-mix(in srgb, var(--accent-d) 14%, #06100f));
+  --ink: light-dark(color-mix(in srgb, var(--accent-l) 15%, #0c0c0c), color-mix(in srgb, var(--accent-d) 12%, #fff));
+  --muted: light-dark(color-mix(in srgb, var(--accent-l) 25%, #666), color-mix(in srgb, var(--accent-d) 30%, #a9b4b2));
+  --rule: light-dark(color-mix(in srgb, var(--accent-l) 18%, #fff), color-mix(in srgb, var(--accent-d) 24%, #06100f));
+  --well: light-dark(color-mix(in srgb, var(--accent-l) 13%, #fff), color-mix(in srgb, var(--accent-d) 9%, #06100f));
+  --knob: light-dark(#fff, color-mix(in srgb, var(--accent-d) 28%, #06100f));
+  --shadow: 0 1px 2px light-dark(rgba(20, 33, 31, 0.16), rgba(0, 0, 0, 0.4)),
+    0 4px 10px -4px light-dark(rgba(20, 33, 31, 0.25), rgba(0, 0, 0, 0.6));
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --mist: #0f2624;
-    --ink: #e3f3ef;
-    --muted: #93b3ad;
-    --rule: #24403d;
-    --well: #0a1d1b;
-    --knob: #2a4744;
-    --accent: #5fd0c2;
-    --on-accent: #062320;
-    --shadow: 0 1px 2px rgba(0, 0, 0, 0.4), 0 6px 14px -6px rgba(0, 0, 0, 0.6);
-  }
+:root[data-theme="light"] {
+  color-scheme: light;
+}
+
+:root[data-theme="dark"] {
+  color-scheme: dark;
 }
 
 * {
@@ -149,13 +150,20 @@ body {
   outline-offset: 2px;
 }
 
+/* The slider already shows the state; the sentence is for screen readers. */
 .status {
-  margin: 8px 2px 10px;
-  color: var(--muted);
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
 }
 
 /* Options */
 .opts {
+  margin-top: 12px;
   border-top: 1px solid var(--rule);
   transition: opacity 0.2s;
 }
@@ -168,7 +176,7 @@ body {
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 6px 2px;
+  padding: 5px 2px;
   border-bottom: 1px solid var(--rule);
   cursor: pointer;
 }
@@ -181,13 +189,6 @@ body {
 .opt__label {
   display: block;
   font-weight: 600;
-}
-
-.opt__hint {
-  display: block;
-  color: var(--muted);
-  font-size: 12px;
-  line-height: 1.3;
 }
 
 /* Small switches */
@@ -217,6 +218,11 @@ body {
   transition: transform 0.18s;
 }
 
+/* The dark knob colour all but vanishes on the off track. */
+.switch:not(:checked)::before {
+  background: light-dark(var(--knob), var(--muted));
+}
+
 .switch:checked {
   background: var(--accent);
 }
@@ -229,6 +235,60 @@ body {
 .switch:focus-visible {
   outline: 2px solid var(--accent);
   outline-offset: 2px;
+}
+
+/* Drop-down (visualizer) */
+.select {
+  flex: 0 0 auto;
+  max-width: 150px;
+  height: 26px;
+  margin: 0;
+  padding: 0 4px;
+  border: 1px solid var(--rule);
+  border-radius: 8px;
+  background: var(--well);
+  color: var(--ink);
+  font: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.select:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+/* Look: accent swatches and the light/dark choice share the last row. */
+.opt--look {
+  cursor: default;
+}
+
+.swatches {
+  display: flex;
+  flex: 1 1 auto;
+  gap: 7px;
+}
+
+.swatch {
+  appearance: none;
+  width: 18px;
+  height: 18px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: light-dark(var(--swatch-l), var(--swatch-d));
+  cursor: pointer;
+}
+
+.swatch[aria-checked="true"] {
+  box-shadow: 0 0 0 2px var(--mist), 0 0 0 4px var(--ink);
+}
+
+.swatch:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 4px;
 }
 
 /* Footer */

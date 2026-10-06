@@ -48,6 +48,7 @@ sync by hand.
 | `extension/popup/*` | popup page | The Off/On slider and option switches. |
 | `extension/content/content.css` | YouTube tab | Every hide rule, grouped by feature, plus the styles for our UI. |
 | `extension/content/content.js` | YouTube tab, isolated world | Settings → classes, player UI, autoplay guard, speed memory, Shorts redirect, home note. |
+| `extension/content/visualizer.js` | YouTube tab, isolated world | The audio visualizer (Web Audio analyser + canvas). Exposes `globalThis.YLMVisualizer`. |
 | `extension/content/page-bridge.js` | YouTube tab, MAIN world | Data saver only. |
 
 ## Settings
@@ -58,13 +59,18 @@ Stored in `chrome.storage.sync` (defaults in `shared/settings.js`):
 | --- | --- | --- |
 | `enabled` | `true` | Master switch. Off means YouTube is untouched. |
 | `hideVideo` | `true` | Collapse the player; show the episode header and bottom bar. |
+| `visualizer` | `'none'` | What to draw in the episode header: `none`, `spectrogram`, `oscilloscope`, `analyzer` or `combined`. Needs `hideVideo`. |
+| `fillPage` | `true` | The episode header fills the window. Needs `hideVideo`. |
 | `hideRecommendations` | `true` | Hide sidebar, end screens, search shelves. |
+| `hideVideoInfo` | `true` | Hide YouTube's metadata block under the player (channel row, buttons, description). |
 | `hideComments` | `true` | Hide comments and live chat. |
 | `hideFeedAndShorts` | `true` | Hide the home feed and Shorts; redirect `/shorts/ID` to `/watch?v=ID`. |
-| `hideSidebar` | `true` | Hide the side menu (guide) on the home page only. |
-| `hideThumbnails` | `true` | Hide video thumbnails everywhere and our own artwork. |
+| `hideSidebar` | `true` | Hide the side menu (guide) on the home page and search results. |
+| `hideThumbnails` | `true` | Hide video thumbnails everywhere and our own artwork; shrink large channel pictures to icon size. |
 | `blockAutoplay` | `true` | Turn off YouTube's autoplay switch and stop at the end of every video. |
 | `dataSaver` | `true` | Ask for the lowest quality, only while `hideVideo` is also on. |
+| `accent` | `'teal'` | Accent colour; one of the `ACCENTS` in `settings.js`. |
+| `theme` | `'system'` | `system`, `light` or `dark`. |
 
 Stored in `chrome.storage.local`: `playbackRate` (number, default `1`).
 
@@ -75,17 +81,25 @@ builds itself from `OPTIONS`). If it's a pure CSS feature, add the key to `FEATU
 ## How each feature works
 
 ### Hiding things
-`content.js` mirrors the settings onto `<html>` as classes (`ylm-on`, `ylm-hide-video`,
-`ylm-hide-recs`, `ylm-hide-comments`, `ylm-hide-feed`, `ylm-hide-nav`, `ylm-hide-thumbs`). Every rule in `content.css` is scoped under
+`content.js` mirrors the settings onto `<html>` as classes (`ylm-on`, `ylm-hide-video`, `ylm-fill`,
+`ylm-hide-recs`, `ylm-hide-info`, `ylm-hide-comments`, `ylm-hide-feed`, `ylm-hide-nav`, `ylm-hide-thumbs`). Every rule in `content.css` is scoped under
 those classes, so turning a feature off is just removing a class. That's why toggling is instant and
 needs no reload. The CSS is injected at `document_start`, so hidden things don't flash on page load.
 
 The side menu is the one page-dependent rule: the guide sits outside the page content, so
-`content.js` also sets `ylm-home` on `<html>` while the path is `/`, and the `ylm-hide-nav` rules
+`content.js` also sets `ylm-no-nav-page` on `<html>` while the path is `/` or `/results`, and the `ylm-hide-nav` rules
 require both classes.
 
 With `hideThumbnails` on, the episode header and player bar hide their artwork and `paintMeta()`
 doesn't set the image `src`, so the picture isn't downloaded either.
+
+### Colour and light/dark
+Each entry in `ACCENTS` has two shades: one for light backgrounds, one for dark. `content.js` puts
+them on `<html>` as `--ylm-accent-l` / `--ylm-accent-d`, and `content.css` picks one and derives the
+other accent tones with `color-mix()`. The injected UI is dark when YouTube is (`html[dark]`) unless
+`theme` forces it with the `ylm-theme-light` / `ylm-theme-dark` classes. We never change YouTube's own
+theme. The popup does the same with `--accent-l` / `--accent-d`, `light-dark()` and a `data-theme`
+attribute; there, `system` follows the device. `light-dark()` is why Chromium 123 is the minimum.
 
 ### Hiding the video without stopping the audio
 The player containers are collapsed to zero height with `overflow: hidden` and `opacity: 0`. The
@@ -108,6 +122,23 @@ crops away the letterbox bars that image always has.
 
 All DOM is built with `createElement` / `createElementNS`. **Never use `innerHTML` in the content
 script:** YouTube enforces Trusted Types and string-to-HTML assignment can throw there.
+
+### Visualizer
+`visualizer.js` draws onto a `<canvas>` that is the first row of the episode header. `render()` in
+`content.js` calls `YLMVisualizer.sync(canvas, video, mode, playing)`; it draws only while the header
+is on screen and audio is playing, and keeps the last picture when paused.
+
+The audio comes from `AudioContext.createMediaElementSource(video)` feeding an `AnalyserNode`. That
+call permanently reroutes the element's sound through our context, so two rules apply: nothing is
+created while the setting is `none`, and a video is only tapped once the context is `running` (a
+suspended context would play silence). Once tapped, a video stays routed through the context until
+the tab is reloaded, even if the visualizer is switched back off.
+
+Each view draws inside a pane (a rectangle of the canvas). The single views get one full-size pane;
+`combined` gets three from `panesFor()`: oscilloscope across the top, spectrogram bottom left,
+analyzer bottom right.
+
+Colours come from the `--ylm-*` tokens, so all three views follow YouTube's light and dark themes.
 
 ### Autoplay blocking
 Two layers:
@@ -155,6 +186,7 @@ Symptoms and where to look:
 | Wrong or missing title/channel | `SEL.title`, `SEL.channel`. |
 | Autoplay continues | `SEL.autoplayOn` (the guard should still stop it; check `stopAtEnd`). |
 | Skip-ad button never shows | `SEL.skipAd`. |
+| Visualizer stays blank, or no sound with it on | `attach()` in `visualizer.js`; check the `AudioContext` state. |
 | Data saver does nothing | `page-bridge.js`: the player API may have changed. |
 
 How to find the new selector:

@@ -8,7 +8,8 @@
  *      instant and needs no reload.
  *   2. Builds the podcast-style UI (an episode header on the watch page and
  *      a player bar fixed to the bottom of the window) and drives YouTube's
- *      own <video> element from it.
+ *      own <video> element from it. The header can hold an audio
+ *      visualizer, drawn by visualizer.js.
  *   3. Blocks autoplay, remembers playback speed, and sends Shorts to the
  *      regular player.
  *
@@ -21,7 +22,8 @@
   if (globalThis.__ylmContentLoaded) return;
   globalThis.__ylmContentLoaded = true;
 
-  const { DEFAULTS, SPEEDS, loadSettings, loadPlaybackRate, savePlaybackRate } = globalThis.YLM;
+  const { DEFAULTS, SPEEDS, accentFor, loadSettings, loadPlaybackRate, savePlaybackRate } = globalThis.YLM;
+  const visualizer = globalThis.YLMVisualizer;
 
   /* ------------------------------------------------------------------ *
    * Selectors that depend on YouTube's markup.                          *
@@ -52,7 +54,9 @@
   /** Setting key → class on <html>. content.css does the rest. */
   const FEATURE_CLASSES = {
     hideVideo: 'ylm-hide-video',
+    fillPage: 'ylm-fill',
     hideRecommendations: 'ylm-hide-recs',
+    hideVideoInfo: 'ylm-hide-info',
     hideComments: 'ylm-hide-comments',
     hideFeedAndShorts: 'ylm-hide-feed',
     hideSidebar: 'ylm-hide-nav',
@@ -76,6 +80,7 @@
   let settings = { ...DEFAULTS };
   let savedRate = 1;
   let ready = false;
+  let appliedAccent = '';
 
   const state = {
     video: null,
@@ -107,7 +112,8 @@
   };
   const textOf = (selectors) => (first(selectors)?.textContent || '').trim();
   const isWatchPage = () => location.pathname === '/watch';
-  const isHomePage = () => location.pathname === '/';
+  /** Pages kept minimal: with `hideSidebar` on, the side menu is hidden here. */
+  const isSearchFirstPage = () => location.pathname === '/' || location.pathname === '/results';
   const currentVideoId = () => new URLSearchParams(location.search).get('v') || '';
   const isAdShowing = () => !!$(SEL.adShowing);
   const isLive = () => !!$(SEL.live);
@@ -269,6 +275,7 @@
         iconButton('Close player', ['close'], dismiss, 'ylm-btn ylm-btn--quiet')));
 
     // Episode header on the watch page, where the video used to be.
+    ui.viz = h('canvas', { class: 'ylm-hero__viz', 'aria-hidden': 'true', hidden: true });
     ui.heroArt = h('img', { alt: '', decoding: 'async' });
     ui.heroTitle = h('h2', { class: 'ylm-hero__title' });
     ui.heroChannel = h('p', { class: 'ylm-hero__channel' });
@@ -278,13 +285,15 @@
       icon('play'), icon('pause'), ui.heroLabel);
 
     ui.hero = h('section', { id: 'ylm-hero', 'aria-label': 'Now playing', hidden: true },
-      h('div', { class: 'ylm-hero__art' }, ui.heroArt),
-      h('div', { class: 'ylm-hero__body' },
-        ui.heroTitle,
-        ui.heroChannel,
-        h('div', { class: 'ylm-hero__actions' },
-          heroPlay,
-          h('span', { class: 'ylm-hero__status' }, eqBars(), ui.remaining))));
+      ui.viz,
+      h('div', { class: 'ylm-hero__row' },
+        h('div', { class: 'ylm-hero__art' }, ui.heroArt),
+        h('div', { class: 'ylm-hero__body' },
+          ui.heroTitle,
+          ui.heroChannel,
+          h('div', { class: 'ylm-hero__actions' },
+            heroPlay,
+            h('span', { class: 'ylm-hero__status' }, eqBars(), ui.remaining)))));
 
     ui.playButtons = [barPlay, heroPlay];
     paintMeta();
@@ -581,6 +590,7 @@
   }
 
   function teardownUI() {
+    visualizer.stop();
     ui.bar?.remove();
     ui.hero?.remove();
     html.classList.remove('ylm-bar-visible', 'ylm-hero-mounted');
@@ -601,6 +611,12 @@
     ui.hero.hidden = !showHero;
     html.classList.toggle('ylm-bar-visible', showBar && ui.bar.isConnected);
     html.classList.toggle('ylm-hero-mounted', showHero);
+
+    // The visualizer only draws while the header is on screen and audio plays.
+    const mode = showHero ? settings.visualizer : 'none';
+    ui.viz.hidden = mode === 'none';
+    visualizer.sync(ui.viz, v, mode, !!v && !v.paused);
+
     if (!v || (!showBar && !showHero)) return;
 
     const ad = isAdShowing();
@@ -648,7 +664,19 @@
       html.classList.toggle(className, on && !!settings[key]);
     }
     // The side menu sits outside the page content, so its rules need to know the page.
-    html.classList.toggle('ylm-home', on && isHomePage());
+    html.classList.toggle('ylm-no-nav-page', on && isSearchFirstPage());
+
+    // Look: a forced light/dark theme (otherwise we follow YouTube's) and the accent colour.
+    html.classList.toggle('ylm-theme-light', on && settings.theme === 'light');
+    html.classList.toggle('ylm-theme-dark', on && settings.theme === 'dark');
+    const accent = on ? accentFor(settings) : null;
+    if ((accent?.value || '') !== appliedAccent) {
+      appliedAccent = accent?.value || '';
+      for (const [name, value] of [['--ylm-accent-l', accent?.light], ['--ylm-accent-d', accent?.dark]]) {
+        if (value) html.style.setProperty(name, value);
+        else html.style.removeProperty(name);
+      }
+    }
     // Read by page-bridge.js (main world) to force the lowest quality.
     const saver = on && settings.hideVideo && settings.dataSaver ? '1' : '0';
     if (html.dataset.ylmDataSaver !== saver) html.dataset.ylmDataSaver = saver;
